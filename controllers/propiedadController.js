@@ -226,7 +226,7 @@ const mostrarPropiedad = async (req, res) => {
         usuario: req.usuario,
         esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId ),
         enviado: req.query.enviado,
-        yaEnvioOferta
+        yaEnvioOferta // Pasamos esto a Pug
     })
 }
 
