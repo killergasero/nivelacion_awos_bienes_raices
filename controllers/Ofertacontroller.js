@@ -1,13 +1,14 @@
-import { Propiedad, Mensaje, Usuario } from '../models/index.js'
+import { Propiedad, Mensaje, Usuario, Precio, Categoria } from '../models/index.js'
 import { validationResult } from 'express-validator'
-import { esVendedor, formatearFecha } from '../helpers/index.js'
+import { formatearFecha } from '../helpers/index.js'
 
 const verMensajes = async (req, res) => {
     const { id } = req.params
 
     const propiedad = await Propiedad.findByPk(id, {
         include: [
-            { model: Mensaje, as: 'mensajes', 
+            { 
+                model: Mensaje, as: 'mensajes', 
                 include: [
                     { model: Usuario.scope('eliminarPassword'), as: 'usuario' }
                 ] 
@@ -28,6 +29,71 @@ const verMensajes = async (req, res) => {
         mensajes: propiedad.mensajes,
         formatearFecha,
         csrfToken: req.csrfToken() 
+    })
+}
+
+const enviarOferta = async (req, res) => {
+    const { id } = req.params
+    const { mensaje, oferta } = req.body
+
+    const propiedad = await Propiedad.findByPk(id, {
+        include: [
+            { model: Precio, as: 'precio' },
+            { model: Categoria, as: 'categoria' }
+        ]
+    })
+
+    if(!propiedad) {
+        return res.redirect('/404')
+    }
+
+    let resultado = validationResult(req)
+
+    const yaEnvioOferta = await Mensaje.findOne({
+        where: {
+            propiedadId: id,
+            usuarioId: req.usuario.id
+        }
+    })
+
+    if(yaEnvioOferta) {
+        return res.render('propiedades/mostrar', {
+            propiedad,
+            pagina: propiedad.titulo,
+            csrfToken: req.csrfToken(),
+            usuario: req.usuario,
+            esVendedor: false,
+            errores: [{ msg: 'Ya has enviado una oferta para esta propiedad' }],
+            yaEnvioOferta: true 
+        })
+    }
+
+    if(!resultado.isEmpty()) {
+        return res.render('propiedades/mostrar', {
+            propiedad,
+            pagina: propiedad.titulo,
+            csrfToken: req.csrfToken(),
+            usuario: req.usuario,
+            esVendedor: false,
+            errores: resultado.array(),
+            yaEnvioOferta: false
+        })
+    }
+
+    await Mensaje.create({
+        mensaje,
+        oferta: oferta || null, 
+        propiedadId: id,
+        usuarioId: req.usuario.id
+    })
+
+    res.render('propiedades/mostrar', {
+        propiedad,
+        pagina: propiedad.titulo,
+        csrfToken: req.csrfToken(),
+        usuario: req.usuario,
+        esVendedor: false,
+        enviado: true
     })
 }
 

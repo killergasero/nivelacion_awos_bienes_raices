@@ -205,7 +205,19 @@ const mostrarPropiedad = async (req, res) => {
             { model: Categoria, as: 'categoria' },
         ]
     })
+//no me acuerdo para que era para validar la oferta 
     if(!propiedad) return res.redirect('/404')
+
+        let yaEnvioOferta = false
+    if (req.usuario) {
+        const mensajePrevio = await Mensaje.findOne({
+            where: {
+                propiedadId: id,
+                usuarioId: req.usuario.id
+            }
+        })
+        yaEnvioOferta = !!mensajePrevio
+    }
 
     res.render('propiedades/mostrar', {
         propiedad,
@@ -213,7 +225,8 @@ const mostrarPropiedad = async (req, res) => {
         csrfToken: req.csrfToken(),
         usuario: req.usuario,
         esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId ),
-        enviado: req.query.enviado
+        enviado: req.query.enviado,
+        yaEnvioOferta
     })
 }
 
@@ -227,6 +240,25 @@ const enviarMensaje = async (req, res) => {
     })
     if(!propiedad) return res.redirect('/404')
 
+    const mensajePrevio = await Mensaje.findOne({
+        where: {
+            propiedadId: id,
+            usuarioId: req.usuario.id
+        }
+    })
+
+    if(mensajePrevio) {
+        return res.render('propiedades/mostrar', {
+            propiedad,
+            pagina: propiedad.titulo,
+            csrfToken: req.csrfToken(),
+            usuario: req.usuario,
+            esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId ),
+            errores: [{ msg: 'Ya has enviado una oferta para esta propiedad' }],
+            yaEnvioOferta: true
+        })
+    }
+
     let resultado = validationResult(req)
     if(!resultado.isEmpty()) {
         return res.render('propiedades/mostrar', {
@@ -235,7 +267,8 @@ const enviarMensaje = async (req, res) => {
             csrfToken: req.csrfToken(),
             usuario: req.usuario,
             esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId ),
-            errores: resultado.array()
+            errores: resultado.array(),
+            yaEnvioOferta: false
         })
     }
 
