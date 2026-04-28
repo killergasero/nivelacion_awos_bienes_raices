@@ -1,10 +1,11 @@
 import { Propiedad, Mensaje } from '../models/index.js'
 import { validationResult } from 'express-validator'
+import { esVendedor } from '../helpers/index.js'
 
 const enviarOferta = async (req, res) => {
     const { id } = req.params
-
     const propiedad = await Propiedad.findByPk(id)
+
     if(!propiedad) {
         return res.redirect('/404')
     }
@@ -17,20 +18,18 @@ const enviarOferta = async (req, res) => {
             pagina: propiedad.titulo,
             csrfToken: req.csrfToken(),
             usuario: req.usuario,
-            esVendedor: false,
+            esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId),
             errores: resultado.array()
         })
     }
 
     const { mensaje, oferta } = req.body
-    const { id: propiedadId } = req.params
-    const { id: usuarioId } = req.usuario
 
     await Mensaje.create({
         mensaje,
         oferta: oferta || null,  
-        propiedadId,
-        usuarioId
+        propiedadId: id,
+        usuarioId: req.usuario.id
     })
 
     res.render('propiedades/mostrar', {
@@ -38,11 +37,9 @@ const enviarOferta = async (req, res) => {
         pagina: propiedad.titulo,
         csrfToken: req.csrfToken(),
         usuario: req.usuario,
-        esVendedor: false,
+        esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId),
         enviado: true
     })
 }
 
-export {
-    enviarOferta
-}
+export { enviarOferta }

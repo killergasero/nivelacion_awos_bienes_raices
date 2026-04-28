@@ -1,15 +1,14 @@
-import { unlink} from 'node:fs/promises'
+import { unlink } from 'node:fs/promises'
 import path from 'node:path'
-import { validationResult} from 'express-validator'
-import { Precio, Categoria, Propiedad, Mensaje, Usuario} from '../models/index.js'
-import { esVendedor, formatearFecha} from '../helpers/index.js'
+import { validationResult } from 'express-validator'
+import { Precio, Categoria, Propiedad, Mensaje, Usuario } from '../models/index.js'
+import { esVendedor, formatearFecha } from '../helpers/index.js'
 
 
 const admin = async (req, res) => {
 
     // Leer QueryString
-
-    const {pagina: paginaActual } = req.query
+    const { pagina: paginaActual } = req.query
     
     const expresion = /^[1-9]$/
 
@@ -18,7 +17,7 @@ const admin = async (req, res) => {
     }
 
     try {
-        const {id} = req.usuario
+        const { id } = req.usuario
 
         // Limites y Offset para el paginador
         const limit = 10
@@ -80,7 +79,7 @@ const crear = async (req, res) => {
 
 const guardar = async (req, res) => {
 
-    // Validaci��n
+    // Validación
     let resultado = validationResult(req)
 
     if(!resultado.isEmpty()) {
@@ -102,10 +101,9 @@ const guardar = async (req, res) => {
     }
 
     // Crear un Registro
-
     const { titulo, descripcion, habitaciones, estacionamiento, wc, calle, lat, lng, precio: precioId, categoria: categoriaId } = req.body
 
-    const { id: usuarioId} = req.usuario
+    const { id: usuarioId } = req.usuario
   
     try {
         const propiedadGuardada = await Propiedad.create({
@@ -123,7 +121,7 @@ const guardar = async (req, res) => {
             imagen: ''
         })
 
-        const {id} = propiedadGuardada
+        const { id } = propiedadGuardada
 
         res.redirect(`/propiedades/agregar-imagen/${id}`)
 
@@ -134,7 +132,7 @@ const guardar = async (req, res) => {
 
 const agregarImagen = async (req, res) => {
 
-    const {id} = req.params
+    const { id } = req.params
 
     // Validar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id)
@@ -147,7 +145,7 @@ const agregarImagen = async (req, res) => {
         return res.redirect('/mis-propiedades')
     }
 
-    // Validar que la propiedad pertenece a quien visita esta p��gina
+    // Validar que la propiedad pertenece a quien visita esta página
     if( req.usuario.id.toString() !== propiedad.usuarioId.toString() ) {
         return res.redirect('/mis-propiedades')
     }
@@ -161,7 +159,7 @@ const agregarImagen = async (req, res) => {
 
 const almacenarImagen = async (req, res, next) => {
 
-    const {id} = req.params
+    const { id } = req.params
 
     // Validar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id)
@@ -174,14 +172,14 @@ const almacenarImagen = async (req, res, next) => {
         return res.redirect('/mis-propiedades')
     }
 
-    // Validar que la propiedad pertenece a quien visita esta p��gina
+    // Validar que la propiedad pertenece a quien visita esta página
     if( req.usuario.id.toString() !== propiedad.usuarioId.toString() ) {
         return res.redirect('/mis-propiedades')
     }
 
     try {
         if(!req.file) {
-            return res.status(400).json({ mensaje: 'No se recibi�� ninguna imagen' })
+            return res.status(400).json({ mensaje: 'No se recibió ninguna imagen' })
         }
 
         // Almacenar la imagen y publicar propiedad
@@ -200,7 +198,7 @@ const almacenarImagen = async (req, res, next) => {
 
 const editar = async (req, res) => {
 
-    const {id} = req.params
+    const { id } = req.params
 
     // Validar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id)
@@ -231,7 +229,7 @@ const editar = async (req, res) => {
 
 const guardarCambios = async (req, res ) => {
     
-    // Verificar la validaci��n
+    // Verificar la validación
     let resultado = validationResult(req)
 
     if(!resultado.isEmpty()) {
@@ -252,7 +250,7 @@ const guardarCambios = async (req, res ) => {
         })
     }
 
-    const {id} = req.params
+    const { id } = req.params
 
     // Validar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id)
@@ -293,6 +291,7 @@ const guardarCambios = async (req, res ) => {
     }
 
 }
+
 const eliminar = async (req, res) => {
     
     const { id } = req.params
@@ -303,20 +302,19 @@ const eliminar = async (req, res) => {
         return res.redirect('/mis-propiedades')
     }
 
-    // Revisar que quien visita la URL es quien cre�� la propiedad
+    // Revisar que quien visita la URL es quien creó la propiedad
     if (propiedad.usuarioId.toString() !== req.usuario.id.toString()) {
         return res.redirect('/mis-propiedades')
     }
 
-    // Eliminar la imagen solo si existe un nombre v��lido
+    // Eliminar la imagen solo si existe un nombre válido
     if (propiedad.imagen && propiedad.imagen.trim() !== '') {
         const rutaImagen = path.join(process.cwd(), 'public', 'uploads', propiedad.imagen)
 
         try {
             await unlink(rutaImagen)
-            console.log(`Se elimin�� la imagen ${propiedad.imagen}`)
         } catch (error) {
-            console.log('No se pudo eliminar la imagen f��sica:', error.message)
+            console.log('No se pudo eliminar la imagen física:', error.message)
         }
     }
 
@@ -328,7 +326,7 @@ const eliminar = async (req, res) => {
 // Modifica el estado de la propiedad
 const cambiarEstado = async (req, res) => {
 
-    const {id} = req.params
+    const { id } = req.params
 
     // Validar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id)
@@ -353,33 +351,7 @@ const cambiarEstado = async (req, res) => {
 
 // Muestra una propiedad
 const mostrarPropiedad = async (req, res) => {
-    const {id} = req.params
-
-    // Comprobar que la propiedad exista
-    const propiedad = await Propiedad.findByPk(id, {
-        include : [
-            { model: Precio, as: 'precio' },
-            { model: Categoria, as: 'categoria', scope: 'eliminarPassword' },
-        ]
-    })
-
-    if(!propiedad || !propiedad.publicado) {
-        return res.redirect('/404')
-    }
-
-
-    res.render('propiedades/mostrar', {
-        propiedad,
-        pagina: propiedad.titulo,
-        csrfToken: req.csrfToken(),
-        usuario: req.usuario,
-        esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId )
-    })
-}
-
-
-const enviarMensaje = async (req, res) => {
-    const {id} = req.params
+    const { id } = req.params
 
     // Comprobar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id, {
@@ -393,8 +365,33 @@ const enviarMensaje = async (req, res) => {
         return res.redirect('/404')
     }
 
-    // Renderizar los errores
-        // Validaci��n
+    res.render('propiedades/mostrar', {
+        propiedad,
+        pagina: propiedad.titulo,
+        csrfToken: req.csrfToken(),
+        usuario: req.usuario,
+        esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId ),
+        enviado: req.query.enviado // Captura si el mensaje fue enviado desde la URL
+    })
+}
+
+
+const enviarMensaje = async (req, res) => {
+    const { id } = req.params
+
+    // Comprobar que la propiedad exista
+    const propiedad = await Propiedad.findByPk(id, {
+        include : [
+            { model: Precio, as: 'precio' },
+            { model: Categoria, as: 'categoria' },
+        ]
+    })
+
+    if(!propiedad) {
+        return res.redirect('/404')
+    }
+
+    // Validación
     let resultado = validationResult(req)
 
     if(!resultado.isEmpty()) {
@@ -408,19 +405,21 @@ const enviarMensaje = async (req, res) => {
             errores: resultado.array()
         })
     }
-    const {mensaje } = req.body
-    const { id: propiedadId} = req.params
-    const { id: usuarioId} = req.usuario
+
+    const { mensaje, oferta } = req.body
+    const { id: propiedadId } = req.params
+    const { id: usuarioId } = req.usuario
 
     // Almacenar el mensaje
     await Mensaje.create({
         mensaje,
+        oferta: oferta || null, // Se agrega el campo oferta si existe en tu modelo
         propiedadId,
         usuarioId
     })
 
-
-    res.redirect('/')
+    // Redireccionar con parámetro de éxito
+    res.redirect(`/propiedad/${propiedad.id}?enviado=true`)
 
 }
 
@@ -428,7 +427,7 @@ const enviarMensaje = async (req, res) => {
 // Leer mensajes recibidos
 const verMensajes = async (req, res) => {
 
-    const {id} = req.params
+    const { id } = req.params
 
     // Validar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id, {
