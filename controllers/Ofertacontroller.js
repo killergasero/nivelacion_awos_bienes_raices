@@ -2,11 +2,9 @@ import { Propiedad, Mensaje, Usuario } from '../models/index.js'
 import { validationResult } from 'express-validator'
 import { esVendedor, formatearFecha } from '../helpers/index.js'
 
-// 1. Método para VER los mensajes (Aquí se genera el token para la vista)
 const verMensajes = async (req, res) => {
     const { id } = req.params
 
-    // Validar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id, {
         include: [
             { model: Mensaje, as: 'mensajes', 
@@ -21,7 +19,6 @@ const verMensajes = async (req, res) => {
         return res.redirect('/mis-propiedades')
     }
 
-    // Revisar que quien visita la URL es el dueño
     if(propiedad.usuarioId.toString() !== req.usuario.id.toString() ) {
         return res.redirect('/mis-propiedades')
     }
@@ -30,11 +27,10 @@ const verMensajes = async (req, res) => {
         pagina: 'Mensajes',
         mensajes: propiedad.mensajes,
         formatearFecha,
-        csrfToken: req.csrfToken() // <-- IMPORTANTE: Genera el token para los forms
+        csrfToken: req.csrfToken() 
     })
 }
 
-// 2. Método para ACEPTAR
 const aceptarOferta = async (req, res) => {
     const { id } = req.params 
 
@@ -50,14 +46,12 @@ const aceptarOferta = async (req, res) => {
         return res.redirect('/mis-propiedades')
     }
 
-    // Marcar como vendida / no publicada
     mensaje.propiedad.publicado = false
     await mensaje.propiedad.save()
 
     res.redirect(`/mensajes/${mensaje.propiedadId}`)
 }
 
-// 3. Método para RECHAZAR
 const rechazarOferta = async (req, res) => {
     const { id } = req.params
 
