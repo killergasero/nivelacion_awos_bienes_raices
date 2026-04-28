@@ -19,7 +19,7 @@ block contenido
                         p(class="font-bold text-gray-800") Enviado: 
                             span(class="font-normal")= formatearFecha( mensaje.createdAt )
                         p(class="font-bold text-gray-800") Oferta: 
-                            if mensajes.oferta
+                            if mensaje.oferta
                                 span(class="font-normal text-green-600 font-bold")= `${mensaje.oferta}`
                             else
                                 span(class="font-normal text-gray-400 italic") No se realizó una oferta
@@ -27,11 +27,11 @@ block contenido
 
                         div(class="flex gap-2 mt-5")
                             form(action=`/mensajes/aceptar/${mensaje.id}` method="POST" class="w-full")
-                                input(type="hidden" name="_csrf" value= csrfToken)
+                                input(type="hidden" name="_csrf" )
                                 input(type="submit" value="Aceptar Oferta y Marcar Vendida" class="w-full bg-green-500 text-white font-bold uppercase text-xs p-2 cursor-pointer hover:bg-green-700 transition-colors rounded")
                             
                             form(action=`/mensajes/rechazar/${mensaje.id}` method="POST" class="w-full")
-                                input(type="hidden" name="_csrf" value= csrfToken)
+                                input(type="hidden" name="_csrf" )
                                 input(type="submit" value="Rechazar y Borrar" class="w-full bg-red-500 text-white font-bold uppercase text-xs p-2 cursor-pointer hover:bg-red-700 transition-colors rounded")
         else 
             p(class="text-center text-gray-600 p-5") No hay mensajes u ofertas para esta propiedad.

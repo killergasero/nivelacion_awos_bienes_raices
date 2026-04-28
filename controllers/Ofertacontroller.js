@@ -42,4 +42,49 @@ const enviarOferta = async (req, res) => {
     })
 }
 
-export { enviarOferta }
+const aceptarOferta = async (req, res) => {
+    const { id } = req.params 
+
+    const mensaje = await Mensaje.findByPk(id, { 
+        include: [{ model: Propiedad }] 
+    })
+    
+    if(!mensaje) {
+        return res.redirect('/mis-propiedades')
+    }
+
+    if(mensaje.propiedad.usuarioId.toString() !== req.usuario.id.toString()) {
+        return res.redirect('/mis-propiedades')
+    }
+
+    mensaje.propiedad.publicado = false
+    await mensaje.propiedad.save()
+
+    res.redirect(`/mensajes/${mensaje.propiedadId}`)
+}
+
+const rechazarOferta = async (req, res) => {
+    const { id } = req.params
+
+    const mensaje = await Mensaje.findByPk(id, { 
+        include: [{ model: Propiedad }] 
+    })
+
+    if(!mensaje) {
+        return res.redirect('/mis-propiedades')
+    }
+
+    if(mensaje.propiedad.usuarioId.toString() !== req.usuario.id.toString()) {
+        return res.redirect('/mis-propiedades')
+    }
+
+    await mensaje.destroy()
+
+    res.redirect(`/mensajes/${mensaje.propiedadId}`)
+}
+
+export { 
+    enviarOferta,
+    aceptarOferta,
+    rechazarOferta
+}
