@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize'
+import { DataTypes } from 'sequelize'
 import db from '../config/db.js'
 
 const Propiedad = db.define('propiedades', {
@@ -47,10 +47,8 @@ const Propiedad = db.define('propiedades', {
     publicado: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: false
+        defaultValue: true 
     }
-
-
 });
 
 export default Propiedad;
