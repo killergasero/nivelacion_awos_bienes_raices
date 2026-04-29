@@ -205,10 +205,10 @@ const mostrarPropiedad = async (req, res) => {
             { model: Categoria, as: 'categoria' },
         ]
     })
-//no me acuerdo para que era para validar la oferta 
+
     if(!propiedad) return res.redirect('/404')
 
-        let yaEnvioOferta = false
+    let yaEnvioOferta = false
     if (req.usuario) {
         const mensajePrevio = await Mensaje.findOne({
             where: {
@@ -226,7 +226,7 @@ const mostrarPropiedad = async (req, res) => {
         usuario: req.usuario,
         esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId ),
         enviado: req.query.enviado,
-        yaEnvioOferta // Pasamos esto a Pug
+        yaEnvioOferta 
     })
 }
 
@@ -316,10 +316,12 @@ const aceptarOferta = async (req, res) => {
         }
 
         const propiedad = await Propiedad.findByPk(mensaje.propiedadId)
+        
         propiedad.publicado = false
         await propiedad.save()
         
         await mensaje.destroy()
+        
         res.redirect('/mis-propiedades')
     } catch (error) {
         console.log(error)
